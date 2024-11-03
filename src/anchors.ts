@@ -29,7 +29,7 @@ const getAnchorText = (anchor: Element) => getData(anchor.nextSibling as Element
 const getAnchorType = (anchor: Element): AnchorType => {
   return (anchor?.parentNode as Element)?.tagName === 'h3'
     ? AnchorType.Title
-    : (anchor?.parentNode?.nextSibling?.nextSibling as Element)?.tagName === 'ul'
+    : (anchor?.parentNode?.next?.next?.next?.next as Element)?.tagName === 'ul'
     ? AnchorType.Union
     : getAnchorText(anchor).match(/^[A-Z]/)
     ? AnchorType.DataType

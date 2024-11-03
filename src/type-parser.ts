@@ -1,6 +1,11 @@
 import * as R from 'ramda';
 import { mapIndexed } from './utils.js';
 
+export const unionToZodDesc = R.reduce(
+  (left: string, right: string) => (left === '' ? right : `${left}.or(${right})`),
+  ''
+);
+
 export const toZodDescString = (type: { desc: string; optional: boolean }) => {
   type ArrayDT = {
     type: 'array';
@@ -83,13 +88,7 @@ export const toZodDescString = (type: { desc: string; optional: boolean }) => {
       : R.join('')([toZodDescFromDT(dt.wraps), '.array()']);
 
   const toZodDescFromOrigin = ({ dts, optional }: Ctx): string =>
-    R.join('')([
-      R.pipe(
-        R.map(toZodDescFromDT),
-        R.reduce((left: string, right: string) => (left === '' ? right : `${left}.or(${right})`), '')
-      )(dts),
-      optional ? '.optional()' : '',
-    ]);
+    R.join('')([R.pipe(R.map(toZodDescFromDT), unionToZodDesc)(dts), optional ? '.optional()' : '']);
 
   const getExternalsFromDT = (dt: DT): string[] =>
     dt.type === 'atomic' ? (dt.external ? [dt.name] : []) : getExternalsFromDT(dt.wraps);

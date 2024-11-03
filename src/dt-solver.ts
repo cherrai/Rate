@@ -14,6 +14,7 @@ export const dtSolver = (anchor: Element) => {
       toFieldsForDtMt,
       R.map(toZodDesc),
       (zodDescs) => ({
+        type: 'DT' as 'DT',
         schemaName,
         zodDescs,
         externals: [],

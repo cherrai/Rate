@@ -19,7 +19,7 @@ const mapIndexed = R.addIndex(R.map);
 
 const findNext = (tagName: string) => (anchor: Element) => {
   return R.pipe(
-    R.dropWhile((x: Element) => x === anchor),
+    R.dropWhile((x: Element) => x !== anchor.parentNode),
     R.filter((x: Element) => x.tagName === tagName),
     R.head<Element>
   )(anchor.parentNode?.parentNode?.children as Element[]) as Element;
