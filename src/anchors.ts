@@ -9,6 +9,7 @@ enum AnchorType {
   Union,
   DataType,
   Method,
+  Other,
 }
 
 function HigherNot<P, K>(f: (u: P) => (v: K) => boolean) {
@@ -27,13 +28,16 @@ const findAnchor = (name: string) =>
 const getAnchorText = (anchor: Element) => getData(anchor.nextSibling as Element | Text);
 
 const getAnchorType = (anchor: Element): AnchorType => {
+  const anchorText = getAnchorText(anchor);
   return (anchor?.parentNode as Element)?.tagName === 'h3'
     ? AnchorType.Title
     : (anchor?.parentNode?.next?.next?.next?.next as Element)?.tagName === 'ul'
     ? AnchorType.Union
-    : getAnchorText(anchor).match(/^[A-Z]/)
+    : anchorText.match(/^[a-z]/)
+    ? AnchorType.Method
+    : !anchorText.match(' ')
     ? AnchorType.DataType
-    : AnchorType.Method;
+    : AnchorType.Other;
 };
 
 export { checkAnchor, checkAnchorNegated, isAnchors, getAnchors, findAnchor, getAnchorText, getAnchorType, AnchorType };

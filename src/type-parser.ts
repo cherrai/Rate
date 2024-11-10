@@ -16,6 +16,8 @@ export const toZodDescString = (type: { desc: string; optional: boolean }) => {
     external: boolean;
     name: string;
     int: boolean;
+    literal: boolean;
+    basic: boolean;
   };
   type DT = ArrayDT | AtomicDT;
   type Ctx = {
@@ -30,7 +32,22 @@ export const toZodDescString = (type: { desc: string; optional: boolean }) => {
 
   const { desc, optional } = type;
 
-  //Basic Type
+  // Literal Test
+  const literalTest = (dt: AtomicDT): AtomicDT => {
+    const LITERALS = ['True'] as const;
+    type LiteralTypes = (typeof LITERALS)[number];
+    const LITERALS_MAP: Record<LiteralTypes, string> = {
+      True: 'true',
+    };
+    const literal = R.includes(dt.name)(LITERALS);
+    return {
+      ...dt,
+      name: literal ? `z.literal(${LITERALS_MAP[dt.name as LiteralTypes]})` : dt.name,
+      literal,
+    };
+  };
+
+  //Basic Type Test
   const basicTypeTest = (dt: AtomicDT) => {
     const BASIC_TYPES = ['Integer', 'String', 'Boolean', 'Float'] as const;
     type BasicTypes = (typeof BASIC_TYPES)[number];
@@ -40,17 +57,20 @@ export const toZodDescString = (type: { desc: string; optional: boolean }) => {
       Float: 'number',
       Integer: 'number',
     };
-    return R.includes(dt.name)(BASIC_TYPES)
-      ? {
-          ...dt,
-          name: BASIC_TYPES_MAP[dt.name as BasicTypes],
-          external: false,
-        }
-      : {
-          ...dt,
-          external: true,
-        };
+    const basic = R.includes(dt.name)(BASIC_TYPES);
+    return {
+      ...dt,
+      basic,
+      name: basic ? BASIC_TYPES_MAP[dt.name as BasicTypes] : dt.name,
+    };
   };
+
+  // External Test
+  const externalTest = (dt: AtomicDT) => ({
+    ...dt,
+    external: !(dt.basic || dt.literal),
+  });
+
   // Int Test
   const intTest = (dt: AtomicDT): AtomicDT => ({
     ...dt,
@@ -66,13 +86,18 @@ export const toZodDescString = (type: { desc: string; optional: boolean }) => {
           type: 'array',
         }
       : R.pipe(
+          literalTest,
           basicTypeTest,
+          externalTest,
           intTest
         )({
           external: false,
+          
           name: desc,
           int: false,
           type: 'atomic',
+          literal: false,
+          basic: false,
         });
   };
 
@@ -84,7 +109,7 @@ export const toZodDescString = (type: { desc: string; optional: boolean }) => {
 
   const toZodDescFromDT = (dt: DT): string =>
     dt.type === 'atomic'
-      ? R.join('')([dt.external ? dt.name : `z.${dt.name}()`, dt.int ? '.int()' : ''])
+      ? R.join('')([dt.external || dt.literal ? dt.name : `z.${dt.name}()`, dt.int ? '.int()' : ''])
       : R.join('')([toZodDescFromDT(dt.wraps), '.array()']);
 
   const toZodDescFromOrigin = ({ dts, optional }: Ctx): string =>

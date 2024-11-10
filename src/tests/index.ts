@@ -1,5 +1,5 @@
-import { toZodDescString } from '../type-parser.js';
-import { from, map, tap } from 'rxjs';
+import { toZodDescString } from '../type-parser.js'
+import { from, map, tap } from 'rxjs'
 
 const cases = [
   {
@@ -10,6 +10,6 @@ const cases = [
     desc: 'Array of User or Array of Message',
     optional: true,
   },
-];
+]
 
-from(cases).pipe(map(toZodDescString), tap(console.log)).subscribe();
+from(cases).pipe(map(toZodDescString), tap(console.log)).subscribe()

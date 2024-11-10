@@ -12,7 +12,6 @@ export const unSolver = (anchor: Element) => {
     schemaName,
     schema: toSchema({
       type: 'UN',
-      externals: unions,
       unions: unions,
       schemaName,
     }),
